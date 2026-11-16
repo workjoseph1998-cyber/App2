@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="eyebrow">ASSETPASS / REPORTING</div>
+    <h1>Reports & exports</h1>
+    <p>Excel workbooks respect your access permissions. Purchase prices are restricted to administrators and asset managers.</p>
+    <form class="filters">
+        <select name="category" aria-label="Category">
+            <option value="">All categories</option>
+            {% for c in asset_categories %}
+                <option {{ 'selected' if request.args.get("category")==c}}>{{ c }}</option>
+            {% endfor %}
+        </select>
+        <select name="department" aria-label="Department">
+            <option value="">All departments</option>
+            {% for d in departments %}
+                <option value="{{ d.id }}"
+                        {{ 'selected' if request.args.get("department")==d.id|string}}>{{ d.name }}</option>
+            {% endfor %}
+        </select>
+        <button>Apply scope</button>
+    </form>
+    <div class="notice-grid">
+        {% for k,label in [('inventory','Full equipment inventory'),('category','Equipment by category'),('department','Equipment by department'),('assignments','Current employee assignments'),('pending','Pending handovers'),('warranty','Warranty expirations'),('returns','Equipment returns'),('issues','Damage & loss reports')] %}
+            <a class="panel export-card"
+               href="{{ url_for('export',kind=k,**request.args.to_dict()) }}">
+                <span>↓ XLSX</span>
+                <h2>{{ label }}</h2>
+                <p>Download permission-scoped workbook →</p>
+            </a>
+        {% endfor %}
+    </div>
+{% endblock %}

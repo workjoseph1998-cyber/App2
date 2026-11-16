@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+    <section class="login">
+        <div class="eyebrow">CIRRUS / INTERNAL WORKSPACE</div>
+        <h1>Everything in view.</h1>
+        <p>Company operations and employee equipment, connected.</p>
+        <form method="post" class="panel">
+            <h2>Welcome back</h2>
+            <input type="hidden" name="csrf" value="{{ csrf }}">
+            <label>
+                Username<input name="username" autocomplete="username" required autofocus>
+            </label>
+            <label>
+                Password<input type="password"
+                               name="password"
+                               autocomplete="current-password"
+                               required>
+            </label>
+            <button>Sign in →</button>
+        </form>
+        <small>Use your internal Cirrus account.</small>
+    </section>
+{% endblock %}

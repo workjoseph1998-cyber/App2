@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+    <section class="panel">
+        <div class="eyebrow">REQUEST COULD NOT BE COMPLETED</div>
+        <h1>Please check this action</h1>
+        <p>{{ message }}</p>
+        <a class="button" href="{{ request.script_root }}/">Back to Live Board</a>
+    </section>
+{% endblock %}

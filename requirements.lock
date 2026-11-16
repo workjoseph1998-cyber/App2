@@ -1,0 +1,14 @@
+# Python 3.12, exact runtime versions; TLS verification remains enabled.
+Flask==3.1.2
+waitress==3.0.2
+openpyxl==3.1.5
+qrcode==8.2
+Pillow==12.0.0
+Werkzeug==3.1.9
+Jinja2==3.1.6
+MarkupSafe==3.0.4
+itsdangerous==2.2.0
+click==8.5.1
+blinker==1.9.0
+et_xmlfile==2.0.0
+colorama==0.4.6; platform_system == "Windows"

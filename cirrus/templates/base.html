@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>{{ title|default("Cirrus Pulse") }}</title>
+        <link rel="stylesheet" href="{{ url_for('static',filename='app.css') }}">
+        <script defer src="{{ url_for('static',filename='app.js') }}"></script>
+    </head>
+    <body>
+        {% if user %}
+            <aside>
+                <a class="brand" href="{{ request.script_root }}/">◩ CIRRUS<span>PULSE / ASSETPASS</span>
+                </a>
+                <div class="nav-label">OPERATIONS</div>
+                <nav>
+                    <a href="{{ request.script_root }}/">Live Board</a>
+                    <a href="{{ request.script_root }}/updates">Updates</a>
+                    {% if publisher %}
+                        <a href="{{ request.script_root }}/updates/new">Create Update</a>
+                    {% endif %}
+                    <a href="{{ request.script_root }}/archive">Archive</a>
+                    <a href="{{ request.script_root }}/notifications">Notifications</a>
+                    <div class="nav-label">ASSETPASS</div>
+                    <a href="{{ request.script_root }}/assetpass">Overview</a>
+                    <a href="{{ request.script_root }}/assetpass/mine">My Equipment</a>
+                    {% if manager or user.role=="department_manager" %}
+                        <a href="{{ request.script_root }}/assetpass/inventory">Equipment Inventory</a>
+                    {% endif %}
+                    <a href="{{ request.script_root }}/assetpass/assignments">Assignments & Handovers</a>
+                    <a href="{{ request.script_root }}/assetpass/returns">Returns</a>
+                    <a href="{{ request.script_root }}/assetpass/issues">Damage & Loss Reports</a>
+                    <a href="{{ request.script_root }}/assetpass/history">Asset History</a>
+                    {% if manager or user.role=="department_manager" %}
+                        <a href="{{ request.script_root }}/assetpass/reports">Reports</a>
+                    {% endif %}
+                    {% if manager %}
+                        <a href="{{ request.script_root }}/assetpass/clearance">Equipment Clearance</a>
+                    {% endif %}
+                    {% if user.role=="admin" %}
+                        <div class="nav-label">ADMINISTRATION</div>
+                        <a href="{{ request.script_root }}/departments">Departments</a>
+                        <a href="{{ request.script_root }}/admin/users">Users / Roles</a>
+                        <a href="{{ request.script_root }}/settings">Settings</a>
+                    {% endif %}
+                </nav>
+                <div class="profile">
+                    <b>{{ user.name }}</b>
+                    <small>{{ user.role|replace('_', ' ') }}</small>
+                    <form method="post" action="{{ request.script_root }}/logout">
+                        <input type="hidden" name="csrf" value="{{ csrf }}">
+                        <button class="quiet">Sign out</button>
+                    </form>
+                </div>
+            </aside>
+        {% endif %}
+        <main class="{{ 'signed-out' if not user }}">
+            <header>
+                <span>COMPANY OPERATIONS / INTERNAL</span>
+                <button type="button" id="theme-toggle" class="quiet">Toggle theme</button>
+            </header>
+            {% for category,message in get_flashed_messages(with_categories=true) %}
+                <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+            {% block content %}{% endblock %}
+            <footer>
+                CIRRUS · One connected workspace. All dates and times in UTC.
+            </footer>
+        </main>
+    </body>
+</html>

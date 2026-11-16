@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="eyebrow">YOUR INBOX</div>
+    <h1>Notifications</h1>
+    <form method="post">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <button>Mark all as read</button>
+    </form>
+    <section class="panel">
+        {% for n in items %}
+            <a class="notification" href="{{ request.script_root }}{{ n.url }}">
+                <span>{{'○' if n.seen else '●'}} {{ n.message }}</span>
+                <small>{{ n.created_at }}</small>
+            </a>
+        {% else %}
+            <p>No notifications yet.</p>
+        {% endfor %}
+    </section>
+{% endblock %}

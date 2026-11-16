@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="eyebrow">CIRRUS PULSE / PUBLISH</div>
+    <h1>Create an update</h1>
+    <p>Keep it brief, clear, and actionable. Scheduling uses UTC.</p>
+    <form method="post" class="panel form-grid">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <label class="full">
+            Title<input name="title" maxlength="180" required>
+        </label>
+        <label class="full">
+            Message<textarea name="body" rows="6" required>
+</textarea>
+        </label>
+        <label>
+            Category<select name="category">
+            {% for c in categories %}
+                <option>{{ c.name }}</option>
+            {% endfor %}
+            </select>
+        </label>
+        <label>
+            Severity<select name="severity">
+            {% for s in severities %}
+                <option>{{ s }}</option>
+            {% endfor %}
+            </select>
+        </label>
+        <label>
+            Start (optional)<input type="datetime-local" name="starts_at">
+        </label>
+        <label>
+            Expiry / deadline (optional)<input type="datetime-local" name="expires_at">
+        </label>
+        <label>
+            Departments (none = all)<select name="departments" multiple>
+            {% for d in departments %}
+                <option value="{{ d.id }}">{{ d.name }}</option>
+            {% endfor %}
+            </select>
+        </label>
+        <label>
+            Roles (none = all)<select name="roles" multiple>
+            {% for r in roles %}
+                <option>{{ r }}</option>
+            {% endfor %}
+            </select>
+        </label>
+        {% if user.role=="department_publisher" %}
+            <p class="full">Your department is enforced automatically.</p>
+        {% endif %}
+        <label>
+            Status<select name="status">
+            <option value="active">Publish active</option>
+            <option value="draft">Save draft</option>
+            </select>
+        </label>
+        <div>
+            <label class="check">
+                <input type="checkbox" name="pinned">Pin announcement
+            </label>
+            <label class="check">
+                <input type="checkbox" name="requires_ack">Require acknowledgement
+            </label>
+        </div>
+        <div class="full">
+            <button>Save update</button>
+        </div>
+    </form>
+{% endblock %}

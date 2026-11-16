@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="page-title">
+        <div>
+            <div class="eyebrow">CIRRUS PULSE</div>
+            <h1>{{ 'Live Board' if dashboard else 'Archive & History' if archive else 'Operational Updates' }}</h1>
+            <p>A clear view of what’s happening across the company.</p>
+        </div>
+        {% if publisher %}
+            <a class="button" href="{{ request.script_root }}/updates/new">+ Publish update</a>
+        {% endif %}
+    </div>
+    {% if dashboard %}
+        <div class="metrics">
+            <div class="metric">
+                <span>Active notices</span>
+                <strong>{{ notices|length }}</strong>
+            </div>
+            <div class="metric">
+                <span>Critical attention</span>
+                <strong>{{ notices|selectattr('severity', 'equalto', 'Critical')|list|length }}</strong>
+            </div>
+            <div class="metric">
+                <span>Pinned announcements</span>
+                <strong>{{ notices|selectattr("pinned")|list|length }}</strong>
+            </div>
+            <div class="metric">
+                <span>Needs your acknowledgement</span>
+                <strong>{{ notices|selectattr("requires_ack")|rejectattr('id','in',acked)|list|length }}</strong>
+            </div>
+        </div>
+        <section class="signal">
+            <span class="live-dot">
+            </span> OPERATIONS LIVE <span>Relevant updates. Shared awareness. Clear action.</span>
+        </section>
+    {% endif %}
+    <form class="filters" method="get">
+        <input aria-label="Search updates"
+               name="q"
+               placeholder="Search updates…"
+               value="{{ request.args.get('q', '') }}">
+        <select name="severity" aria-label="Severity">
+            <option value="">All priorities</option>
+            {% for s in severities %}
+                <option {{ 'selected' if request.args.get("severity")==s}}>{{ s }}</option>
+            {% endfor %}
+        </select>
+        <select name="category" aria-label="Category">
+            <option value="">All categories</option>
+            {% for c in categories %}
+                <option {{ 'selected' if request.args.get("category")==c.name}}>{{ c.name }}</option>
+            {% endfor %}
+        </select>
+        <select name="department" aria-label="Department">
+            <option value="">All departments</option>
+            {% for d in departments %}
+                <option value="{{ d.id }}"
+                        {{ 'selected' if request.args.get("department")==d.id|string}}>{{ d.name }}</option>
+            {% endfor %}
+        </select>
+        {% if archive %}
+            <select name="status" aria-label="Status">
+                <option value="">All statuses</option>
+                {% for s in ['draft','active','expired','archived'] %}
+                    <option {{ 'selected' if request.args.get("status")==s}}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        {% endif %}
+        <label>
+            From<input type="date" name="from" value="{{ request.args.get('from', '') }}">
+        </label>
+        <label>
+            To<input type="date" name="to" value="{{ request.args.get('to', '') }}">
+        </label>
+        <label class="check">
+            <input type="checkbox"
+                   name="pinned"
+                   value="1"
+                   {{ 'checked' if request.args.get("pinned") }}>Pinned
+        </label>
+        <button>Filter</button>
+        <a href="{{ request.script_root }}{{ request.path }}">Reset</a>
+    </form>
+    <div class="section-title">
+        <h2>{{'Company signal' if dashboard else 'Updates'}}</h2>
+        <span>{{ notices|length }} visible updates</span>
+    </div>
+    <div class="notice-grid">
+        {% for n in notices %}
+            <article class="notice {{ n.severity|lower }}">
+                <div class="card-top">
+                    <span class="badge {{ n.severity|lower }}">{{ n.severity }}</span>
+                    <span>{{'PINNED · ' if n.pinned}}{{ n.category }}</span>
+                </div>
+                <h2>
+                    <a href="{{ request.script_root }}/updates/{{ n.id }}">{{ n.title }}</a>
+                </h2>
+                <p>{{ n.body|truncate(240) }}</p>
+                <div class="card-bottom">
+                    <span>{{ n.author }} · {{ n.published_at[:10] }}</span>
+                    <span>{{ notice_status(n) }}</span>
+                </div>
+                {% if n.expires_at %}
+                    <small>Deadline / expiry: {{ n.expires_at[:16]|replace('T', ' ') }}</small>
+                {% endif %}
+                {% if n.requires_ack %}
+                    <div class="ack-hint">{{'✓ Acknowledged' if n.id in acked else '● Your acknowledgement is required'}}</div>
+                {% endif %}
+            </article>
+        {% else %}
+            <div class="empty">
+                <h2>You’re up to date.</h2>
+                <p>No updates match this view.</p>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

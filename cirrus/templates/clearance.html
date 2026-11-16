@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="eyebrow">ASSETPASS / OFFBOARDING</div>
+    <h1>Equipment clearance</h1>
+    <form class="filters">
+        <label>
+            Employee<select name="user_id" required>
+            {% for e in employees %}
+                <option value="{{ e.id }}" {{'selected' if selected==e.id|string}}>{{ e.name }}</option>
+            {% endfor %}
+            </select>
+        </label>
+        <button>Review equipment</button>
+    </form>
+    {% include "assignment_table.html" %}
+    {% if selected %}
+        <form method="post" class="panel">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
+            <input type="hidden" name="user_id" value="{{ selected }}">
+            <p>Clearance can be completed only after all assignments are returned. User accounts remain enabled.</p>
+            <button>Complete equipment clearance</button>
+        </form>
+    {% endif %}
+    <section class="panel">
+        <h2>Completed clearances</h2>
+        {% for c in completed %}
+            <p>{{ c.name }} · {{ c.completed_at }}</p>
+        {% endfor %}
+    </section>
+{% endblock %}

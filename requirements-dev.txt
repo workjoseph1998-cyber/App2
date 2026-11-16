@@ -1,0 +1,4 @@
+pytest==8.4.2
+playwright==1.65.2
+ruff==0.17.5
+djlint==1.50.4

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="eyebrow">ASSETPASS / ACCOUNTABILITY</div>
+    <h1>{{ title }}</h1>
+    <p>Receipt confirmations and returns retain their original timestamps.</p>
+    {% include "assignment_table.html" %}
+    {% if events %}
+        <section class="panel">
+            <h2>Lifecycle audit trail</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Recorded</th>
+                            <th>Asset</th>
+                            <th>Actor</th>
+                            <th>Action / notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in events %}
+                            <tr>
+                                <td>{{ e.created_at }}</td>
+                                <td>{{ e.asset_tag or '—' }}</td>
+                                <td>{{ e.actor }}</td>
+                                <td>
+                                    <b>{{ e.action }}</b>
+                                    <small>{{ e.detail }}</small>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    {% endif %}
+{% endblock %}

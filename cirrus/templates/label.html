@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+    <section class="asset-label">
+        <div class="eyebrow">CIRRUS / COMPANY EQUIPMENT</div>
+        <h1>{{ a.asset_tag }}</h1>
+        <img width="200"
+             height="200"
+             alt="Asset record QR code"
+             src="{{ request.script_root }}/assetpass/assets/{{ a.id }}/qr">
+        <p>Scan to view authenticated equipment record.</p>
+    </section>
+    <button id="print-label">Print label</button>
+{% endblock %}

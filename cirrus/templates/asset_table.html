@@ -1,0 +1,46 @@
+<div class="table-wrap panel">
+    <table>
+        <thead>
+            <tr>
+                <th>Asset ID / equipment</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Condition</th>
+                <th>Warranty</th>
+                <th>Location</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in assets %}
+                <tr>
+                    <td>
+                        <a href="{{ request.script_root }}/assetpass/assets/{{ a.id }}">
+                            <b>{{ a.asset_tag }}</b>
+                            <small>{{ a.manufacturer or '' }} {{ a.model or '' }}</small>
+                        </a>
+                    </td>
+                    <td>{{ a.category }}</td>
+                    <td>
+                        <span class="badge {{'warning' if a.status in ['Missing','Under Repair'] else 'notice'}}">{{ a.status }}</span>
+                    </td>
+                    <td>{{ a.condition }}</td>
+                    <td>
+                        {{ a.warranty_expiration or '—' }}
+                        {% if a.warranty_expiration and utc_today<=a.warranty_expiration<=warranty_soon %}
+                            <br>
+                            <span class="badge warning">Expiring soon</span>
+                        {% elif a.warranty_expiration and a.warranty_expiration<utc_today %}
+                            <br>
+                            <small>Expired</small>
+                        {% endif %}
+                    </td>
+                    <td>{{ a.location or '—' }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" class="empty">No equipment in this view.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

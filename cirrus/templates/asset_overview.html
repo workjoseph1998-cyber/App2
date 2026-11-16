@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="page-title">
+        <div>
+            <div class="eyebrow">CIRRUS ASSETPASS</div>
+            <h1>Equipment, accounted for.</h1>
+            <p>Inventory, handovers, and lifecycle in one place.</p>
+        </div>
+        {% if manager %}
+            <a class="button" href="{{ request.script_root }}/assetpass/new">+ Register equipment</a>
+        {% endif %}
+    </div>
+    <div class="metrics">
+        {% for name,count in metrics.items() %}
+            <div class="metric">
+                <span>{{ name }}</span>
+                <strong>{{ count }}</strong>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="section-title">
+        <h2>Equipment snapshot</h2>
+        <a href="{{ request.script_root }}/assetpass/inventory">View inventory →</a>
+    </div>
+    {% include "asset_table.html" %}
+{% endblock %}

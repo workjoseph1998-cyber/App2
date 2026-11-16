@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="page-title">
+        <div>
+            <div class="eyebrow">ASSETPASS / EQUIPMENT RECORD</div>
+            <h1>{{ a.asset_tag }}</h1>
+            <p>
+                {{ a.manufacturer or '' }} {{ a.model or '' }} · {{ a.category }} · <span class="badge notice">{{ a.status }}</span>
+            </p>
+        </div>
+        {% if manager %}
+            <a class="button secondary"
+               href="{{ request.script_root }}/assetpass/assets/{{ a.id }}/edit">Edit specifications</a>
+            <a class="button secondary"
+               href="{{ request.script_root }}/assetpass/assets/{{ a.id }}/label">Print QR label</a>
+        {% endif %}
+    </div>
+    <section class="panel">
+        <h2>Equipment specifications</h2>
+        <div class="specs">
+            {% for k in ['serial','description','condition','location','purchase_date','warranty_expiration','retirement_date','disposal_status'] %}
+                <div>
+                    <small>{{ k|replace('_', ' ')|title }}</small>
+                    <b>{{ a[k] or '—' }}</b>
+                </div>
+            {% endfor %}
+            {% if manager %}
+                <div>
+                    <small>Purchase cost</small>
+                    <b>{{ a.purchase_cost or '—' }}</b>
+                </div>
+                <div>
+                    <small>Supplier</small>
+                    <b>{{ a.supplier or '—' }}</b>
+                </div>
+                <div>
+                    <small>Notes</small>
+                    <b>{{ a.notes or '—' }}</b>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+    {% if active %}
+        <section class="panel">
+            <h2>Current handover</h2>
+            <p>{{ active.employee }} · Assigned {{ active.assigned_at }} · Condition: {{ active.condition_out }}</p>
+            <p>{{ active.notes or '' }}</p>
+            <span class="badge {{'notice' if active.confirmed_at else 'warning'}}">{{'Receipt confirmed '+active.confirmed_at if active.confirmed_at else 'Awaiting employee confirmation'}}</span>
+            {% if active.user_id==user.id %}
+                {% if not active.confirmed_at %}
+                    <form method="post"
+                          action="{{ request.script_root }}/assetpass/assignments/{{ active.id }}/confirm">
+                        <input type="hidden" name="csrf" value="{{ csrf }}">
+                        <button>I confirm receipt</button>
+                    </form>
+                {% endif %}
+                {% if not active.return_requested_at %}
+                    <form method="post"
+                          action="{{ request.script_root }}/assetpass/assignments/{{ active.id }}/request-return">
+                        <input type="hidden" name="csrf" value="{{ csrf }}">
+                        <button class="secondary">Request return</button>
+                    </form>
+                {% else %}
+                    <p>Return requested {{ active.return_requested_at }}</p>
+                {% endif %}
+                <a href="{{ request.script_root }}/assetpass/issues?asset_id={{ a.id }}">Report damage or missing equipment →</a>
+            {% endif %}
+            {% if manager %}
+                <details>
+                    <summary>Verify physical return</summary>
+                    <form method="post"
+                          action="{{ request.script_root }}/assetpass/assignments/{{ active.id }}/return"
+                          class="form-grid">
+                        <input type="hidden" name="csrf" value="{{ csrf }}">
+                        <label>
+                            Return condition<input name="condition" required>
+                        </label>
+                        <label>
+                            Next status<select name="status">
+                            <option>Available</option>
+                            <option>Under Repair</option>
+                            <option>Retired</option>
+                            </select>
+                        </label>
+                        <label>
+                            Return notes<textarea name="notes">
+</textarea>
+                        </label>
+                        <label class="check">
+                            <input type="checkbox" name="verified" required>I physically verified the equipment
+                        </label>
+                        <button>Close assignment & record return</button>
+                    </form>
+                </details>
+            {% endif %}
+        </section>
+    {% elif manager and a.status=="Available" %}
+        <section class="panel">
+            <h2>Assign & hand over</h2>
+            <form method="post"
+                  action="{{ request.script_root }}/assetpass/assets/{{ a.id }}/assign"
+                  class="form-grid">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <label>
+                    Employee<select name="user_id" required>
+                    {% for e in employees %}
+                        <option value="{{ e.id }}">{{ e.name }}</option>
+                    {% endfor %}
+                    </select>
+                </label>
+                <label>
+                    Assignment date<input type="date" name="assigned_at" value="{{ utc_today }}" required>
+                </label>
+                <label>
+                    Condition at handover<input name="condition" value="{{ a.condition }}" required>
+                </label>
+                <label>
+                    Handover notes<textarea name="notes">
+</textarea>
+                </label>
+                <button>Submit handover</button>
+                <p>Employee confirmation will remain pending.</p>
+            </form>
+        </section>
+    {% endif %}
+    {% if manager %}
+        <details class="panel">
+            <summary>Manage condition & lifecycle</summary>
+            <form method="post" class="form-grid">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <label>
+                    Status<select name="status">
+                    {% for s in asset_statuses %}
+                        <option {{'selected' if a.status==s}}>{{ s }}</option>
+                    {% endfor %}
+                    </select>
+                </label>
+                <label>
+                    Condition<input name="condition" value="{{ a.condition }}" required>
+                </label>
+                <label>
+                    Location<input name="location" value="{{ a.location or '' }}">
+                </label>
+                <label>
+                    Disposal status<input name="disposal_status" value="{{ a.disposal_status or '' }}">
+                </label>
+                <label class="full">
+                    Notes / repair details<textarea name="notes">{{a.notes or ''}}</textarea>
+                </label>
+                <button>Save lifecycle update</button>
+            </form>
+        </details>
+    {% endif %}
+    <section class="panel">
+        <h2>Attachments</h2>
+        {% for f in attachments %}
+            <p>
+                <a href="{{ request.script_root }}/assetpass/attachments/{{ f.id }}">↓ {{ f.name }}</a>{{' · Report #'+f.issue_id|string if f.issue_id else ''}}
+            </p>
+        {% else %}
+            <p>No attachments.</p>
+        {% endfor %}
+        {% if manager or (active and active.user_id==user.id) %}
+            <form method="post"
+                  enctype="multipart/form-data"
+                  action="{{ request.script_root }}/assetpass/assets/{{ a.id }}/attachments">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <label>
+                    Report ID {{'(optional)' if manager else '(required for employee photos)'}}<input type="number"
+                                                                                                      name="issue_id"
+                                                                                                      min="1"
+                                                                                                      {{'required' if not manager}}>
+                </label>
+                <label>
+                    PNG, JPEG or PDF · up to 8 MB<input type="file"
+                                                        name="file"
+                                                        accept="image/png,image/jpeg,application/pdf"
+                                                        required>
+                </label>
+                <button>Upload attachment</button>
+            </form>
+        {% endif %}
+    </section>
+    <h2>Handover history</h2>
+    {% set items = history %}
+    {% include "assignment_table.html" %}
+    {% if manager %}
+        <section class="panel">
+            <h2>Audit trail</h2>
+            {% for e in events %}
+                <p>
+                    <small>{{ e.created_at }} · {{ e.actor }}</small>
+                    <br>
+                    <b>{{ e.action }}</b> {{ e.detail }}
+                </p>
+            {% endfor %}
+        </section>
+    {% endif %}
+{% endblock %}

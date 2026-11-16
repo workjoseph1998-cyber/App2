@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS schema_versions(version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS departments(id INTEGER PRIMARY KEY, name TEXT UNIQUE NOT NULL);
+CREATE TABLE IF NOT EXISTS categories(id INTEGER PRIMARY KEY, name TEXT UNIQUE NOT NULL);
+CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL, name TEXT NOT NULL, password TEXT NOT NULL, role TEXT NOT NULL, department_id INTEGER REFERENCES departments(id), enabled INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS notices(id INTEGER PRIMARY KEY, title TEXT NOT NULL, body TEXT NOT NULL, category TEXT NOT NULL, severity TEXT NOT NULL, author_id INTEGER REFERENCES users(id), published_at TEXT NOT NULL, starts_at TEXT, expires_at TEXT, pinned INTEGER DEFAULT 0, requires_ack INTEGER DEFAULT 0, status TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS notice_departments(notice_id INTEGER REFERENCES notices(id), department_id INTEGER REFERENCES departments(id), PRIMARY KEY(notice_id,department_id));
+CREATE TABLE IF NOT EXISTS notice_roles(notice_id INTEGER REFERENCES notices(id), role TEXT, PRIMARY KEY(notice_id,role));
+CREATE TABLE IF NOT EXISTS acknowledgements(notice_id INTEGER REFERENCES notices(id), user_id INTEGER REFERENCES users(id), acknowledged_at TEXT NOT NULL, PRIMARY KEY(notice_id,user_id));
+CREATE TABLE IF NOT EXISTS notifications(id INTEGER PRIMARY KEY, user_id INTEGER REFERENCES users(id), message TEXT NOT NULL, url TEXT NOT NULL, created_at TEXT NOT NULL, seen INTEGER DEFAULT 0);
+CREATE TABLE IF NOT EXISTS assets(id INTEGER PRIMARY KEY, asset_tag TEXT UNIQUE NOT NULL, category TEXT NOT NULL, manufacturer TEXT, model TEXT, serial TEXT, description TEXT, purchase_date TEXT, purchase_cost TEXT, supplier TEXT, warranty_expiration TEXT, condition TEXT NOT NULL, status TEXT NOT NULL, location TEXT, notes TEXT, retirement_date TEXT, disposal_status TEXT);
+CREATE UNIQUE INDEX IF NOT EXISTS unique_serial ON assets(lower(serial)) WHERE serial IS NOT NULL AND serial != '';
+CREATE TABLE IF NOT EXISTS assignments(id INTEGER PRIMARY KEY, asset_id INTEGER NOT NULL REFERENCES assets(id), user_id INTEGER NOT NULL REFERENCES users(id), assigned_at TEXT NOT NULL, condition_out TEXT NOT NULL, notes TEXT, confirmed_at TEXT, confirmed_by INTEGER REFERENCES users(id), return_requested_at TEXT, returned_at TEXT, condition_in TEXT, return_notes TEXT, created_by INTEGER REFERENCES users(id));
+CREATE UNIQUE INDEX IF NOT EXISTS one_active_assignment ON assignments(asset_id) WHERE returned_at IS NULL;
+CREATE TABLE IF NOT EXISTS issues(id INTEGER PRIMARY KEY, asset_id INTEGER REFERENCES assets(id), user_id INTEGER REFERENCES users(id), kind TEXT NOT NULL, description TEXT NOT NULL, created_at TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'Open', resolution TEXT);
+CREATE TABLE IF NOT EXISTS attachments(id INTEGER PRIMARY KEY, asset_id INTEGER REFERENCES assets(id), issue_id INTEGER REFERENCES issues(id), name TEXT NOT NULL, storage_key TEXT UNIQUE NOT NULL, mime TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY, actor_id INTEGER REFERENCES users(id), asset_id INTEGER REFERENCES assets(id), action TEXT NOT NULL, detail TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS clearances(id INTEGER PRIMARY KEY, user_id INTEGER REFERENCES users(id), completed_by INTEGER REFERENCES users(id), completed_at TEXT NOT NULL);
+
+CREATE UNIQUE INDEX IF NOT EXISTS asset_tag_case_insensitive ON assets(lower(asset_tag));
+CREATE TABLE IF NOT EXISTS login_attempts(identity TEXT NOT NULL, attempted_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS login_attempt_lookup ON login_attempts(identity,attempted_at);

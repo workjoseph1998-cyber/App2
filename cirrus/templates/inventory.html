@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="page-title">
+        <div>
+            <div class="eyebrow">ASSETPASS</div>
+            <h1>{{'My Equipment' if mine else 'Equipment Inventory'}}</h1>
+            <p>{{'Review your equipment, confirm receipt, or request a return.' if mine else 'A reliable record of your company equipment.'}}</p>
+        </div>
+        {% if manager %}
+            <a class="button" href="{{ request.script_root }}/assetpass/new">+ Register equipment</a>
+        {% endif %}
+    </div>
+    {% if not mine %}
+        <form class="filters">
+            <input name="q"
+                   aria-label="Search equipment"
+                   placeholder="Asset, model, serial…"
+                   value="{{ request.args.get('q', '') }}">
+            <select name="category" aria-label="Category">
+                <option value="">All categories</option>
+                {% for c in asset_categories %}
+                    <option {{ 'selected' if request.args.get("category")==c}}>{{ c }}</option>
+                {% endfor %}
+            </select>
+            <select name="status" aria-label="Status">
+                <option value="">All statuses</option>
+                {% for s in asset_statuses %}
+                    <option {{ 'selected' if request.args.get("status")==s}}>{{ s }}</option>
+                {% endfor %}
+            </select>
+            <select name="warranty" aria-label="Warranty">
+                <option value="">All warranties</option>
+                <option value="expiring"
+                        {{ 'selected' if request.args.get("warranty")=='expiring'}}>Expiring in 30 days</option>
+                <option value="expired"
+                        {{ 'selected' if request.args.get("warranty")=='expired'}}>Expired</option>
+            </select>
+            <select name="department" aria-label="Department">
+                <option value="">All departments</option>
+                {% for d in departments %}
+                    <option value="{{ d.id }}"
+                            {{ 'selected' if request.args.get("department")==d.id|string}}>{{ d.name }}</option>
+                {% endfor %}
+            </select>
+            <button>Filter</button>
+            <a href="{{ request.script_root }}/assetpass/inventory">Reset</a>
+        </form>
+    {% endif %}
+    {% include "asset_table.html" %}
+    {% if mine %}
+        <h2>My handover & return history</h2>
+        {% set items = history %}
+        {% include "assignment_table.html" %}
+    {% endif %}
+{% endblock %}

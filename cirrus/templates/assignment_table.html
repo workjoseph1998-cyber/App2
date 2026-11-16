@@ -1,0 +1,43 @@
+<div class="table-wrap panel">
+    <table>
+        <thead>
+            <tr>
+                <th>Asset</th>
+                <th>Employee</th>
+                <th>Assigned</th>
+                <th>Receipt confirmation</th>
+                <th>Return</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for x in items %}
+                <tr>
+                    <td>
+                        {% if not x.returned_at or manager %}
+                            <a href="{{ request.script_root }}/assetpass/assets/{{ x.asset_id }}">{{ x.asset_tag }}</a>
+                        {% else %}
+                            {{ x.asset_tag }}
+                        {% endif %}
+                    </td>
+                    <td>{{ x.employee|default(user.name) }}</td>
+                    <td>
+                        {{ x.assigned_at }}<small>Condition: {{ x.condition_out }}</small>
+                        <small>{{ x.notes or "" }}</small>
+                    </td>
+                    <td>{{ x.confirmed_at or 'Pending' }}</td>
+                    <td>
+                        {{ x.returned_at or ('Requested '+x.return_requested_at if x.return_requested_at else 'In use') }}
+                        {% if x.returned_at %}
+                            <small>Condition: {{ x.condition_in }}</small>
+                            <small>{{ x.return_notes or '' }}</small>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" class="empty">No handovers in this view.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

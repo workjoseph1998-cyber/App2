@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="eyebrow">PULSE / {{ n.category }}</div>
+    <span class="badge {{ n.severity|lower }}">{{ n.severity }}</span>
+    <h1>{{ n.title }}</h1>
+    <p>{{ n.author }} · {{ n.published_at }} · {{ notice_status(n) }}</p>
+    <article class="panel">
+        <div class="prose">{{ n.body }}</div>
+        {% if n.requires_ack %}
+            {% if ack %}
+                <p>✓ Acknowledged {{ ack.acknowledged_at }}</p>
+            {% elif notice_status(n)=="active" %}
+                <form method="post">
+                    <input type="hidden" name="csrf" value="{{ csrf }}">
+                    <button name="action" value="ack">Acknowledge / Mark as seen</button>
+                </form>
+            {% endif %}
+        {% endif %}
+    </article>
+    {% if owner %}
+        <section class="panel">
+            <h2>Publishing controls</h2>
+            <form method="post">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <button name="action" value="archive">Archive</button>
+                {% if n.status=="draft" %}
+                    <button name="action" value="publish">Publish draft</button>
+                {% endif %}
+            </form>
+            {% if n.requires_ack %}
+                <h2>Acknowledgement status</h2>
+                {% for a in acks %}
+                    <p>{{ a.name }} · {{ a.acknowledged_at }}</p>
+                {% endfor %}
+                <h3>Pending ({{ pending|length }})</h3>
+                <p>{{ pending|join(", ") }}</p>
+            {% endif %}
+        </section>
+    {% endif %}
+{% endblock %}

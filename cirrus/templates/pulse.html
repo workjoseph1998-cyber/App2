@@ -1,117 +1,13 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}{% from 'components.html' import orbit %}
 {% block content %}
-    <div class="page-title">
-        <div>
-            <div class="eyebrow">CIRRUS PULSE</div>
-            <h1>{{ 'Live Board' if dashboard else 'Archive & History' if archive else 'Operational Updates' }}</h1>
-            <p>A clear view of what’s happening across the company.</p>
-        </div>
-        {% if publisher %}
-            <a class="button" href="{{ request.script_root }}/updates/new">+ Publish update</a>
-        {% endif %}
-    </div>
-    {% if dashboard %}
-        <div class="metrics">
-            <div class="metric">
-                <span>Active notices</span>
-                <strong>{{ notices|length }}</strong>
-            </div>
-            <div class="metric">
-                <span>Critical attention</span>
-                <strong>{{ notices|selectattr('severity', 'equalto', 'Critical')|list|length }}</strong>
-            </div>
-            <div class="metric">
-                <span>Pinned announcements</span>
-                <strong>{{ notices|selectattr("pinned")|list|length }}</strong>
-            </div>
-            <div class="metric">
-                <span>Needs your acknowledgement</span>
-                <strong>{{ notices|selectattr("requires_ack")|rejectattr('id','in',acked)|list|length }}</strong>
-            </div>
-        </div>
-        <section class="signal">
-            <span class="live-dot">
-            </span> OPERATIONS LIVE <span>Relevant updates. Shared awareness. Clear action.</span>
-        </section>
-    {% endif %}
-    <form class="filters" method="get">
-        <input aria-label="Search updates"
-               name="q"
-               placeholder="Search updates…"
-               value="{{ request.args.get('q', '') }}">
-        <select name="severity" aria-label="Severity">
-            <option value="">All priorities</option>
-            {% for s in severities %}
-                <option {{ 'selected' if request.args.get("severity")==s}}>{{ s }}</option>
-            {% endfor %}
-        </select>
-        <select name="category" aria-label="Category">
-            <option value="">All categories</option>
-            {% for c in categories %}
-                <option {{ 'selected' if request.args.get("category")==c.name}}>{{ c.name }}</option>
-            {% endfor %}
-        </select>
-        <select name="department" aria-label="Department">
-            <option value="">All departments</option>
-            {% for d in departments %}
-                <option value="{{ d.id }}"
-                        {{ 'selected' if request.args.get("department")==d.id|string}}>{{ d.name }}</option>
-            {% endfor %}
-        </select>
-        {% if archive %}
-            <select name="status" aria-label="Status">
-                <option value="">All statuses</option>
-                {% for s in ['draft','active','expired','archived'] %}
-                    <option {{ 'selected' if request.args.get("status")==s}}>{{ s }}</option>
-                {% endfor %}
-            </select>
-        {% endif %}
-        <label>
-            From<input type="date" name="from" value="{{ request.args.get('from', '') }}">
-        </label>
-        <label>
-            To<input type="date" name="to" value="{{ request.args.get('to', '') }}">
-        </label>
-        <label class="check">
-            <input type="checkbox"
-                   name="pinned"
-                   value="1"
-                   {{ 'checked' if request.args.get("pinned") }}>Pinned
-        </label>
-        <button>Filter</button>
-        <a href="{{ request.script_root }}{{ request.path }}">Reset</a>
-    </form>
-    <div class="section-title">
-        <h2>{{'Company signal' if dashboard else 'Updates'}}</h2>
-        <span>{{ notices|length }} visible updates</span>
-    </div>
-    <div class="notice-grid">
-        {% for n in notices %}
-            <article class="notice {{ n.severity|lower }}">
-                <div class="card-top">
-                    <span class="badge {{ n.severity|lower }}">{{ n.severity }}</span>
-                    <span>{{'PINNED · ' if n.pinned}}{{ n.category }}</span>
-                </div>
-                <h2>
-                    <a href="{{ request.script_root }}/updates/{{ n.id }}">{{ n.title }}</a>
-                </h2>
-                <p>{{ n.body|truncate(240) }}</p>
-                <div class="card-bottom">
-                    <span>{{ n.author }} · {{ n.published_at[:10] }}</span>
-                    <span>{{ notice_status(n) }}</span>
-                </div>
-                {% if n.expires_at %}
-                    <small>Deadline / expiry: {{ n.expires_at[:16]|replace('T', ' ') }}</small>
-                {% endif %}
-                {% if n.requires_ack %}
-                    <div class="ack-hint">{{'✓ Acknowledged' if n.id in acked else '● Your acknowledgement is required'}}</div>
-                {% endif %}
-            </article>
-        {% else %}
-            <div class="empty">
-                <h2>You’re up to date.</h2>
-                <p>No updates match this view.</p>
-            </div>
-        {% endfor %}
-    </div>
+<div class="page-title"><div><div class="eyebrow"><span class="tiny-dot"></span> CIRRUS PULSE <span class="eyebrow-slash">/</span> YOUR DAILY SIGNAL</div><h1>{{'Live Board' if dashboard else 'Archive & History' if archive else 'Operational Updates'}}<span class="heading-dot">.</span></h1><p>{{'Your company in motion. Everything that matters, in one place.' if dashboard else 'The right information. At the right time.'}}</p></div><div class="page-actions"><button class="button secondary" data-refresh-page><span data-ui-icon="refresh"></span>Refresh</button>{% if publisher %}<a class="button" href="{{request.script_root}}/updates/new"><span data-ui-icon="plus"></span>+ Publish update</a>{% endif %}</div></div>
+{% if dashboard %}
+<section class="pulse-hero"><div class="hero-grain"></div><div class="hero-copy"><div class="hero-kicker"><span class="status-pulse"></span> THE CONNECTED WORKSPACE</div><h2>The whole company.<br><span>One clear view.</span></h2><p>From the first update to the next handover.<br>Stay close to what keeps your company moving.</p><a class="hero-link" href="{{request.script_root}}/assetpass">Explore AssetPass <span><span class="inline-arrow" data-ui-icon="external" aria-hidden="true"></span></span></a><div class="hero-bottom"><span>OPERATIONS, IN FOCUS.</span><span class="hero-index">PULSE / 01</span></div></div>{{orbit()}}</section>
+<div class="metrics pulse-metrics">{% for label,count,icon,note in [('Active notices',notices|length,'layers','Your operational feed'),('Critical attention',notices|selectattr('severity','equalto','Critical')|list|length,'alert','Prioritize what matters'),('Pinned announcements',notices|selectattr('pinned')|list|length,'pin','Keep it front and center'),('Needs your acknowledgement',notices|selectattr('requires_ack')|rejectattr('id','in',acked)|list|length,'check','Your next actions')] %}<div class="metric"><div class="metric-top"><span>{{label}}</span><span class="metric-icon" data-ui-icon="{{icon}}"></span></div><strong data-count="{{count}}">{{count}}</strong><div class="metric-bottom"><span class="metric-mini-line"></span>{{note}}</div></div>{% endfor %}</div>
+<div class="insight-row"><div id="pulse-priorities" class="priority-widget" data-total="{{notices|length}}" data-critical="{{notices|selectattr('severity','equalto','Critical')|list|length}}" data-warning="{{notices|selectattr('severity','equalto','Warning')|list|length}}" data-important="{{notices|selectattr('severity','equalto','Important')|list|length}}"></div><div class="workspace-note"><span class="note-icon" data-ui-icon="sparkles"></span><div><h3>A little clarity goes a long way.</h3><p>Your board includes updates relevant to your role and department.</p></div><a href="{{request.script_root}}/notifications" aria-label="View notifications"><span class="inline-arrow" data-ui-icon="external" aria-hidden="true"></span></a></div></div>
+{% endif %}
+<div class="section-title feed-section-title"><div><span class="section-index">01 — THE FEED</span><h2>{{'Company signal' if dashboard else 'Updates'}}<span class="count-pill">{{notices|length}}</span></h2></div><span class="subtle">Relevant to you. Ready for action.</span></div>
+<div id="board-controls"></div>
+<details class="filter-panel" {{'open' if request.args}}><summary><span data-ui-icon="sliders"></span> Advanced filters <span>Category, audience, dates & status</span></summary><form class="filters" method="get"><input aria-label="Search updates" name="q" placeholder="Search title or message…" value="{{request.args.get('q','')}}"><select name="severity" aria-label="Severity"><option value="">All priorities</option>{% for s in severities %}<option {{'selected' if request.args.get('severity')==s}}>{{s}}</option>{% endfor %}</select><select name="category" aria-label="Category"><option value="">All categories</option>{% for c in categories %}<option {{'selected' if request.args.get('category')==c.name}}>{{c.name}}</option>{% endfor %}</select><select name="department" aria-label="Department"><option value="">All departments</option>{% for d in departments %}<option value="{{d.id}}" {{'selected' if request.args.get('department')==d.id|string}}>{{d.name}}</option>{% endfor %}</select>{% if archive %}<select name="status" aria-label="Status"><option value="">All statuses</option>{% for s in ['draft','active','expired','archived'] %}<option {{'selected' if request.args.get('status')==s}}>{{s}}</option>{% endfor %}</select>{% endif %}<label>From<input type="date" name="from" value="{{request.args.get('from','')}}"></label><label>To<input type="date" name="to" value="{{request.args.get('to','')}}"></label><label class="check"><input type="checkbox" name="pinned" value="1" {{'checked' if request.args.get('pinned')}}>Pinned</label><button>Apply filters</button><a href="{{request.script_root}}{{request.path}}">Reset</a></form></details>
+<div class="notice-grid" id="notice-feed">{% for n in notices %}<article class="notice notice-card {{n.severity|lower}}" data-id="{{n.id}}" data-severity="{{n.severity}}" data-pinned="{{n.pinned}}" data-pending="{{'1' if n.requires_ack and n.id not in acked else '0'}}" data-category="{{n.category}}"><div class="card-top"><span class="badge {{n.severity|lower}}"><i></i>{{n.severity}}</span><span class="notice-category">{{n.category}}</span>{% if n.pinned %}<span class="pin-indicator" data-ui-icon="pin" title="Pinned"></span>{% endif %}</div><h2><a href="{{request.script_root}}/updates/{{n.id}}">{{n.title}}<span class="card-arrow"><span class="inline-arrow" data-ui-icon="external" aria-hidden="true"></span></span></a></h2><p>{{n.body|truncate(240)}}</p><div class="card-bottom"><span class="author-avatar">{{n.author[:1]|upper}}</span><span><b>{{n.author}}</b><small>{{n.published_at[:10]}}</small></span><span class="notice-state">{{notice_status(n)}}</span></div>{% if n.expires_at %}<small class="notice-deadline"><span data-ui-icon="clock"></span>Deadline / expiry: {{n.expires_at[:16]|replace('T',' ')}} UTC</small>{% endif %}{% if n.requires_ack %}<a class="ack-hint {{'is-done' if n.id in acked}}" href="{{request.script_root}}/updates/{{n.id}}"><span data-ui-icon="{{'check' if n.id in acked else 'circle'}}"></span>{{'Acknowledged' if n.id in acked else 'Your acknowledgement is required'}}<span>→</span></a>{% endif %}</article>{% else %}<div class="empty"><div class="empty-orbit">✓</div><h2>You’re up to date.</h2><p>No updates match this view.</p>{% if publisher %}<a class="button" href="{{request.script_root}}/updates/new">Publish your first update <span class="inline-arrow" data-ui-icon="external" aria-hidden="true"></span></a>{% endif %}</div>{% endfor %}</div>
 {% endblock %}

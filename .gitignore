@@ -6,3 +6,4 @@ data/
 *.log
 dist/*.zip
 .ruff_cache/
+frontend/node_modules/

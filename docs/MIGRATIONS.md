@@ -1,5 +1,11 @@
 # Schema, migration and recovery
 
+## Cirrus Experience 2.0
+
+The v2 interface uses the existing v1/v2 SQLite schema without destructive migrations. See [UPGRADE_2.0.md](UPGRADE_2.0.md) for the safe copy-based installer: it verifies the original database, uses the SQLite backup API, preserves uploads and the session key, refuses an existing nonempty destination, and leaves the old installation intact. Existing users/passwords, notices, assignments, acknowledgements, attachments and audits are retained. New logs and backups remain separate in the new data directory. No Workplace data is imported.
+
+## Original schema history
+
 This first combined release starts an independent `cirrus.sqlite3`. There is no previous Pulse database in the selected repository and no migration/import from Cirrus Workplace.
 
 `create_app()` initializes the schema with `CREATE TABLE/INDEX IF NOT EXISTS`, inserts schema version records, and applies the additive v2 `users.auth_version` column only when absent. Version 1 contains the shared operations and equipment tables; version 2 introduces session invalidation and login-attempt tracking. Existing notice/user/asset records are preserved. No destructive downgrade, table drop or automatic account removal is performed.

@@ -501,6 +501,18 @@ def register_assets(app):
         out.seek(0)
         return send_file(out, mimetype="image/png")
 
+    @app.get("/assetpass/labels")
+    @protected("admin", "asset_manager")
+    def batch_labels():
+        value = request.args.get("ids", "")
+        try:
+            ids = sorted({int(item) for item in value.split(",") if item})
+        except ValueError:
+            abort(400, "Invalid asset selection.")
+        if not ids or len(ids) > 50:
+            abort(400, "Select between 1 and 50 assets.")
+        return render_template("labels.html", assets=[asset_or_404(aid) for aid in ids])
+
     @app.get("/assetpass/assets/<int:aid>/label")
     @protected("admin", "asset_manager")
     def label(aid):

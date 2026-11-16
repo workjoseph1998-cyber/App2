@@ -1,26 +1,6 @@
-{% extends "base.html" %}
-{% block content %}
-    <div class="page-title">
-        <div>
-            <div class="eyebrow">CIRRUS ASSETPASS</div>
-            <h1>Equipment, accounted for.</h1>
-            <p>Inventory, handovers, and lifecycle in one place.</p>
-        </div>
-        {% if manager %}
-            <a class="button" href="{{ request.script_root }}/assetpass/new">+ Register equipment</a>
-        {% endif %}
-    </div>
-    <div class="metrics">
-        {% for name,count in metrics.items() %}
-            <div class="metric">
-                <span>{{ name }}</span>
-                <strong>{{ count }}</strong>
-            </div>
-        {% endfor %}
-    </div>
-    <div class="section-title">
-        <h2>Equipment snapshot</h2>
-        <a href="{{ request.script_root }}/assetpass/inventory">View inventory →</a>
-    </div>
-    {% include "asset_table.html" %}
+{% extends 'base.html' %}{% block content %}
+<div class="page-title"><div><div class="eyebrow"><span class="tiny-dot"></span> CIRRUS ASSETPASS <span class="eyebrow-slash">/</span> EQUIPMENT INTELLIGENCE</div><h1>Everything, accounted for<span class="heading-dot">.</span></h1><p>A connected view of your equipment. From first handover to final return.</p></div>{% if manager %}<a class="button" href="{{request.script_root}}/assetpass/new"><span data-ui-icon="plus"></span>+ Register equipment</a>{% endif %}</div>
+<div class="asset-overview-grid"><section class="asset-hero"><div class="hero-kicker"><span class="status-pulse"></span> YOUR EQUIPMENT ECOSYSTEM</div><h2>Good equipment.<br><span>Great possibilities.</span></h2><p>Know what you have. Where it is.<br>And who’s making things happen with it.</p><a href="{{request.script_root}}/assetpass/inventory" class="hero-link">Explore inventory <span><span class="inline-arrow" data-ui-icon="external" aria-hidden="true"></span></span></a><div class="device-scene" aria-hidden="true"><div class="device-halo"></div><div class="device-platform platform-one"></div><div class="device-platform platform-two"></div><div class="device-laptop"><div class="device-screen"><span class="screen-symbol">C<span>✳</span></span><div class="screen-line"></div><div class="screen-line short"></div></div><div class="device-base"></div></div><div class="floating-tag tag-one"><span class="tiny-dot"></span>CONNECTED</div><div class="floating-tag tag-two">ASSET / 02 <span class="inline-arrow" data-ui-icon="external" aria-hidden="true"></span></div></div></section><div id="asset-analytics" class="asset-analytics" data-metrics='{{metrics|tojson}}'></div></div>
+<div class="metrics asset-metrics">{% for name,count in metrics.items() %}<div class="metric"><div class="metric-top"><span>{{name}}</span><span class="metric-icon" data-ui-icon="{{'alert' if name in ['Missing','Pending returns','Under Repair'] else 'box'}}"></span></div><strong data-count="{{count}}">{{count}}</strong><div class="metric-bottom"><span class="metric-mini-line"></span>{{'Needs attention' if name in ['Missing','Pending returns','Under Repair'] else 'In your permitted scope'}}</div></div>{% endfor %}</div>
+<div class="section-title"><div><span class="section-index">01 — EQUIPMENT</span><h2>Inventory at a glance</h2></div><a class="text-link" href="{{request.script_root}}/assetpass/inventory">Open full inventory <span class="inline-arrow" data-ui-icon="external" aria-hidden="true"></span></a></div>{% include 'asset_table.html' %}
 {% endblock %}

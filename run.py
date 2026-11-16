@@ -48,7 +48,30 @@ def main():
         return 1
     pid = Path(app.config["DATA_DIR"]) / "cirrus.pid"
     pid.write_text(str(os.getpid()))
-    print("Cirrus Pulse + AssetPass listening on 127.0.0.1:8000", flush=True)
+    print("Cirrus Experience 2.0 listening on 127.0.0.1:8000", flush=True)
+    if os.environ.get("CIRRUS_OPEN_BROWSER") == "1":
+        import threading
+        import time
+        import webbrowser
+        from urllib.request import urlopen
+
+        def open_when_ready():
+            prefix = os.environ.get("CIRRUS_URL_PREFIX", "").rstrip("/")
+            local = "http://127.0.0.1:8000" + prefix
+            destination = (
+                os.environ.get("CIRRUS_PUBLIC_BASE_URL", "http://127.0.0.1:8000").rstrip("/")
+                + prefix
+            )
+            for _ in range(30):
+                try:
+                    with urlopen(local + "/login", timeout=1) as response:
+                        if response.status == 200:
+                            webbrowser.open(destination)
+                            return
+                except OSError:
+                    time.sleep(0.3)
+
+        threading.Thread(target=open_when_ready, daemon=True).start()
     try:
         server.run()
     except KeyboardInterrupt:

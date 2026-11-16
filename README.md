@@ -1,83 +1,99 @@
-# Cirrus Pulse + Cirrus AssetPass · 1.0.1
+# Cirrus Experience 2.0
 
-One independent internal Flask application containing two integrated modules:
+**A new interface for Cirrus Pulse + Cirrus AssetPass.** One internal workspace, one Python application, the same `127.0.0.1:8000` endpoint.
 
-- **Pulse:** live operations board, priorities, department/role targeting, schedules and expiry, pinned announcements, acknowledgement tracking, drafts/archive, search and filters.
-- **AssetPass:** inventory, employee equipment, pending handovers and receipt confirmation, verified returns, damage/loss reports with protected attachments, lifecycle audit history, warranty tracking, QR labels, Excel exports and equipment clearance.
+This release replaces the v1 interface with an animated, responsive workspace: orbital and equipment visuals, a floating navigation shell, light/dark themes, keyboard command search, a notification drawer, priority views, interactive equipment charts, sortable inventory tables, equipment cards, quick-view dialogs, selection and batch label printing. All counts and search results come from permitted records. There are no fabricated uptime percentages, activity trends or equipment metrics.
 
-Both modules share internal accounts, departments, server-side permissions, notifications and one SQLite database. This application never reads Cirrus Workplace code or data.
+## Install on your Windows server
 
-## Run on Windows Server 2022
+Download **`dist/Cirrus-Experience-Version-2.0.0.zip`** and extract it into a **new folder**. Do not overwrite your current installation.
 
-See [installation, IIS, startup, shutdown and rollback](docs/INSTALLATION.md). The only production listener is **127.0.0.1:8000**. An occupied port refuses startup without stopping its owner. No deployment is performed by this repository.
+1. **Stop the old app** (Ctrl+C in its server window).
+2. If retaining your existing accounts/equipment/notices, double-click **`Import-Existing-Data.cmd`** in the new folder. Paste your old application folder or its `data` folder. The original data remains untouched. Run this before setup.
+3. Double-click **`Setup-Cirrus.cmd`**. It creates a separate Python 3.12 virtual environment, installs the pinned dependencies and initializes the app. It asks for an administrator only when one does not already exist.
+4. Double-click **`Start-Cirrus.cmd`**. It opens the browser after the server responds. Keep the window open; press Ctrl+C to stop. **`Stop-Cirrus.cmd`** is also provided and checks process identity before stopping anything.
 
-```powershell
-cd C:\Apps\CirrusPulse
-powershell -File scripts\setup.ps1
-.venv\Scripts\python.exe -m flask --app cirrus:create_app init-admin
-powershell -File scripts\start.ps1
-# Later:
-powershell -File scripts\stop.ps1
-```
+These `.cmd` launchers do not invoke unsigned `.ps1` scripts. **Node.js is not needed on Windows:** the compiled React interface, icons and fonts are included, served locally by Flask/Waitress. Python 3.12 x64 is required; there is no default production password.
 
-Use Python 3.12 (64-bit). Create your administrator interactively; there is no default production password and no public registration.
+Open the server's `http://127.0.0.1:8000` or your existing IIS HTTPS address. Only one application may use port 8000. Startup refuses an occupied port; it never terminates its owner.
 
-## Develop locally
+See [the v2 upgrade guide](docs/UPGRADE_2.0.md) for your existing installation path, data retention, configuration and rollback. [Full installation/IIS instructions](docs/INSTALLATION.md) also cover the existing PowerShell alternatives.
 
-```sh
-python3.12 -m venv .venv
-.venv/bin/python -m pip install -r requirements.lock
-.venv/bin/python -m pip install -r requirements-dev.txt
-.venv/bin/python -m flask --app cirrus:create_app init-admin
-.venv/bin/python run.py
-.venv/bin/python -m pytest -q
-```
+## Explore the interface
 
-Use the existing checkout. Each cloud task is isolated; do not create another worktree unless explicitly requested. Data defaults to the ignored `data/` directory. Live processes need restarting in a new environment. The production runner uses Waitress, never Flask debug mode.
+- **Pulse:** animated operations hero, priority summaries, critical/pinned/action-needed views, grid/list layouts, searchable/filterable updates, acknowledgements, scheduled publication and archive.
+- **AssetPass:** animated equipment scene, a real equipment-distribution chart, sortable/searchable inventory, equipment cards, quick views, warranties, selection and printable QR labels.
+- **Your equipment:** personal equipment workspace with receipt confirmation, return requests, issue reporting and your handover history.
+- **Workspace:** Ctrl+K / Command+K search across permitted pages and records; keyboard navigation, native modal focus handling, escape-to-close, mobile navigation and reduced-motion support.
+- **Notifications:** drawer with unread count, permission-scoped items, mark-all-read action and a sixty-second refresh while signed in. The board itself refreshes on navigation or its explicit Refresh button.
+- **Details:** lifecycle progress steps derived from actual timestamps, clean specification panels, readable notices and consistent forms across both modules.
 
-## Roles
+[View the new screenshots](docs/SCREENSHOTS_V2.md).
+
+## Roles and data protection
 
 | Role | Pulse | AssetPass |
 |---|---|---|
-| Admin | Manage accounts/departments/categories; publish and manage all notices | Full inventory, cost, assignment, return, report/export and clearance access |
-| Publisher | Publish, target and manage own notices; review own acknowledgements | Own equipment only |
-| Department publisher | Publish and manage own notices; targeting always limited to own department | Own equipment only |
-| Asset manager | Read targeted notices and acknowledge | Full asset management, costs, reports, exports and clearance |
-| Department manager | Read targeted notices and acknowledge | View assets currently assigned to own department; department-scoped history and exports; no costs or inventory mutations |
-| Employee / Viewer | Read targeted notices and acknowledge | Own current equipment and own handover/return history; confirm own receipt, request own return, report own issues |
+| Admin | Manage accounts, departments/categories and notices | Full management, costs, reports and clearance |
+| Publisher | Publish/target/manage own notices | Own equipment workflows |
+| Department publisher | Publish/manage own notices; own department always enforced | Own equipment workflows |
+| Asset manager | Read targeted notices, acknowledge | Full asset management, costs, exports and clearance |
+| Department manager | Read targeted notices, acknowledge | Department-scoped assets, history and exports; no costs or inventory changes |
+| Employee / Viewer | Read targeted notices, acknowledge | Own equipment/history, confirmation, returns and issue reports |
 
-Accounts have one role. Department managers with no department have no departmental access. Authenticated users can always use their own equipment workflows regardless of role. Authors and administrators may review authored/managed notices even when not in the notice audience. Critical **global** notices are visible to all enabled accounts; deliberately targeted critical notices retain their audience restrictions.
+Authorization is enforced by Flask, including new search, notification and batch-label endpoints. The interface is not an authorization boundary. Search and quick views do not include purchase prices. Employees cannot confirm for someone else or assign equipment to themselves. Accounts have one role. Authors and admins can review managed notices. Critical global notices reach all users; explicitly targeted notices retain their audience.
 
-## Data integrity and security
+The transactional SQLite workflows from v1 remain: unique asset IDs and serials, one open assignment per asset, actual employee confirmation, staff-verified returns, lifecycle audits, protected attachments, formula-safe Excel exports and equipment clearance without disabling accounts. CSRF protection, scrypt hashing, login throttling, session revocation and response security headers remain enabled.
 
-- SQLite foreign keys, WAL mode, explicit write transactions, unique asset IDs/serial numbers and one open assignment per asset. Shared checkout is intentionally unsupported in v1.
-- A handover is pending until the actual recipient confirms; staff cannot confirm for them. Returns require staff physical verification and recorded condition. Clearance does not disable accounts.
-- Server-side audience/ownership checks, CSRF tokens on all POSTs, scrypt password hashing, 8-hour sessions, login throttling, account-change session invalidation, response security headers, safe spreadsheet cells, and protected PNG/JPEG/PDF downloads.
-- Optional attachment files have opaque storage names outside static files. Downloads are forced as attachments. No executable/HTML uploads. Report photos remain accessible only to the reporter and asset staff. Use your existing endpoint antivirus scanning policy; there is no built-in malware scanner.
-- Scheduled notices and their notifications become available on authenticated visits after their start time. Expiry is evaluated on reads; original publication status is retained for history.
-- Prices, supplier information and internal inventory notes are rendered only for admin/asset manager. Employees see handover notes relevant to them.
-- All dates/times are UTC. Database and backups contain private company information; restrict Windows ACLs and backup access.
+## Storage and deployment
 
-## Documentation and release files
+Independent data defaults to the ignored `data/` folder: `cirrus.sqlite3`, `uploads/`, `session.key`, `logs/` and `backups/`. Never use Workplace data. Production uses Waitress on loopback only; IIS can continue proxying to it. No external font/CDN connections or Node server are required.
 
-- [Installation and rollback](docs/INSTALLATION.md)
-- [Schema migration and backup](docs/MIGRATIONS.md)
-- [Test results and limitations](docs/TEST_RESULTS.md)
-- [Changelog](CHANGELOG.md)
-- [Sample screenshots](docs/SCREENSHOTS.md) — synthetic records only
-- ZIP: `dist/Cirrus-Pulse-Version-1.0.1.zip` (generated with `python scripts/package.py`; excludes databases, secrets, virtualenvs and caches)
+Optional environment variables:
 
-## Optional synthetic demo
+- `CIRRUS_DATA_DIR`: private data directory; preserve existing custom values.
+- `CIRRUS_COOKIE_SECURE=1`: when users access IIS over HTTPS.
+- `CIRRUS_PUBLIC_BASE_URL`: external origin for QR labels and automatic browser opening, e.g. `https://operations.example.internal`.
+- `CIRRUS_URL_PREFIX`: optional preserved IIS path, e.g. `/pulse`.
 
-```powershell
-.venv\Scripts\python.exe scripts\demo.py --data-dir data\demo
-$env:CIRRUS_DATA_DIR = (Join-Path $PWD 'data\demo')
-# Start only while port 8000 is free.
-powershell -File scripts\start.ps1
+If reusing a custom `CIRRUS_DATA_DIR`, take a backup and use the same value; do not import it into itself. The copy-based upgrade guide is the safer default for the ordinary local `data` deployment.
+
+## Develop
+
+Use the existing checkout. Cloud tasks are already isolated; do not create another worktree unless explicitly requested.
+
+```sh
+python3.12 -m venv .venv
+.venv/bin/python -m pip install -r requirements.lock -r requirements-dev.txt
+.venv/bin/python -m flask --app cirrus:create_app init-admin
+.venv/bin/python run.py
 ```
 
-The demo script prompts for a password and refuses a nonempty database. Accounts are `demo.admin`, `demo.employee`, `demo.operations`. Never point a production deployment at the demo directory. Remove the environment override before using real data.
+Only frontend development requires Node.js (22.12+; this release was built on Node 24):
 
-## Known boundaries
+```sh
+npm ci --prefix frontend
+npm run build --prefix frontend
+```
 
-Windows Server/IIS/PowerShell must be verified on the target VM; Linux browser and Python tests are not a production deployment test. There is no SSO, email delivery, background reminder service, built-in antivirus, multi-currency accounting, shared equipment checkout, or account revocation on clearance. Asset categories are fixed in v1; Pulse categories and departments can be added in the admin UI. The image mentioned in the specification was not supplied, so the UI follows its written palette. No Workplace changes or automatic deployment are included.
+The build writes the production files to `cirrus/static/experience/`. Commit them with frontend changes so Windows installations can run without a JavaScript build. Sources and dependency lockfiles are included in the release. Bundled third-party licenses are in `frontend/licenses/`; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+Validation, while port 8000 is free:
+
+```sh
+.venv/bin/python -m pytest -q
+.venv/bin/python scripts/browser_check.py
+```
+
+The browser check requires Playwright and Chromium and uses a separate synthetic database. It writes the v2 screenshot gallery, exercises the real Waitress server, then stops only the process it started. Runtime processes must be restarted in a restored cloud task. No production Windows deployment is performed automatically.
+
+## Documentation
+
+- [Upgrade and rollback](docs/UPGRADE_2.0.md)
+- [Windows/IIS installation](docs/INSTALLATION.md)
+- [Database migration and backup](docs/MIGRATIONS.md)
+- [V2 test results and limitations](docs/TEST_RESULTS_V2.md)
+- [Screenshots](docs/SCREENSHOTS_V2.md)
+- [Changelog](CHANGELOG.md)
+
+Windows Server 2022, native `.cmd` execution, NTFS ACLs and real IIS acceptance must still be verified on your server. Tests here run on Linux. There is no SSO, email reminder worker, built-in malware scanner, shared checkout or automatic employee account revocation. Equipment categories remain fixed in v2. All recorded times are UTC; the toolbar clock follows the browser's local time. Continuous animations stop when the operating system requests reduced motion.

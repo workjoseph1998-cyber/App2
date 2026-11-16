@@ -1,23 +1,4 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}{% from 'components.html' import orbit %}
 {% block content %}
-    <section class="login">
-        <div class="eyebrow">CIRRUS / INTERNAL WORKSPACE</div>
-        <h1>Everything in view.</h1>
-        <p>Company operations and employee equipment, connected.</p>
-        <form method="post" class="panel">
-            <h2>Welcome back</h2>
-            <input type="hidden" name="csrf" value="{{ csrf }}">
-            <label>
-                Username<input name="username" autocomplete="username" required autofocus>
-            </label>
-            <label>
-                Password<input type="password"
-                               name="password"
-                               autocomplete="current-password"
-                               required>
-            </label>
-            <button>Sign in →</button>
-        </form>
-        <small>Use your internal Cirrus account.</small>
-    </section>
+<div class="login-layout"><section class="login-art"><a class="brand" href="{{request.script_root}}/"><img src="{{url_for('static',filename='mark.svg')}}" width="40" height="40" alt=""><span>cirrus<span class="brand-dot">.</span></span></a><div class="login-art-copy"><div class="eyebrow">YOUR COMPANY. CONNECTED.</div><h1>Less noise.<br>More <span>possibility.</span></h1><p>One home for the people, updates, and equipment that keep your company moving.</p></div>{{orbit()}}<div class="login-art-footer"><span>01 / PULSE</span><span>02 / ASSETPASS</span><span>ONE WORKSPACE <span class="inline-arrow" data-ui-icon="external" aria-hidden="true"></span></span></div></section><section class="login-form-side"><div class="login-version">CIRRUS EXPERIENCE <span>2.0</span></div><div class="login"><div class="eyebrow"><span class="tiny-dot"></span> YOUR WORKDAY STARTS HERE</div><h2>Welcome back<span class="accent">.</span></h2><p>A clear view of everything that matters.</p><form method="post" class="login-form"><input type="hidden" name="csrf" value="{{csrf}}"><label>Username<input name="username" autocomplete="username" placeholder="Your internal username" required autofocus></label><label>Password<span class="password-field"><input type="password" name="password" autocomplete="current-password" placeholder="Enter your password" required><button type="button" class="password-toggle" aria-label="Show password"><span data-ui-icon="eye"></span></button></span></label><div class="login-note"><span data-ui-icon="lock"></span> Secure access for your team</div><button class="login-submit">Sign in <span><span class="inline-arrow" data-ui-icon="external" aria-hidden="true"></span></span></button></form><div class="login-support">Need access? Contact your workspace administrator.</div></div><div class="login-bottom"><span>BUILT FOR A COMPANY IN MOTION.</span><span>© CIRRUS</span></div></section></div>
 {% endblock %}

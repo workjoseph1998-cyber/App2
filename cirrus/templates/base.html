@@ -1,71 +1,56 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width,initial-scale=1">
-        <title>{{ title|default("Cirrus Pulse") }}</title>
-        <link rel="stylesheet" href="{{ url_for('static',filename='app.css') }}">
-        <script defer src="{{ url_for('static',filename='app.js') }}"></script>
-    </head>
-    <body>
-        {% if user %}
-            <aside>
-                <a class="brand" href="{{ request.script_root }}/">◩ CIRRUS<span>PULSE / ASSETPASS</span>
-                </a>
-                <div class="nav-label">OPERATIONS</div>
-                <nav>
-                    <a href="{{ request.script_root }}/">Live Board</a>
-                    <a href="{{ request.script_root }}/updates">Updates</a>
-                    {% if publisher %}
-                        <a href="{{ request.script_root }}/updates/new">Create Update</a>
-                    {% endif %}
-                    <a href="{{ request.script_root }}/archive">Archive</a>
-                    <a href="{{ request.script_root }}/notifications">Notifications</a>
-                    <div class="nav-label">ASSETPASS</div>
-                    <a href="{{ request.script_root }}/assetpass">Overview</a>
-                    <a href="{{ request.script_root }}/assetpass/mine">My Equipment</a>
-                    {% if manager or user.role=="department_manager" %}
-                        <a href="{{ request.script_root }}/assetpass/inventory">Equipment Inventory</a>
-                    {% endif %}
-                    <a href="{{ request.script_root }}/assetpass/assignments">Assignments & Handovers</a>
-                    <a href="{{ request.script_root }}/assetpass/returns">Returns</a>
-                    <a href="{{ request.script_root }}/assetpass/issues">Damage & Loss Reports</a>
-                    <a href="{{ request.script_root }}/assetpass/history">Asset History</a>
-                    {% if manager or user.role=="department_manager" %}
-                        <a href="{{ request.script_root }}/assetpass/reports">Reports</a>
-                    {% endif %}
-                    {% if manager %}
-                        <a href="{{ request.script_root }}/assetpass/clearance">Equipment Clearance</a>
-                    {% endif %}
-                    {% if user.role=="admin" %}
-                        <div class="nav-label">ADMINISTRATION</div>
-                        <a href="{{ request.script_root }}/departments">Departments</a>
-                        <a href="{{ request.script_root }}/admin/users">Users / Roles</a>
-                        <a href="{{ request.script_root }}/settings">Settings</a>
-                    {% endif %}
-                </nav>
-                <div class="profile">
-                    <b>{{ user.name }}</b>
-                    <small>{{ user.role|replace('_', ' ') }}</small>
-                    <form method="post" action="{{ request.script_root }}/logout">
-                        <input type="hidden" name="csrf" value="{{ csrf }}">
-                        <button class="quiet">Sign out</button>
-                    </form>
-                </div>
-            </aside>
-        {% endif %}
-        <main class="{{ 'signed-out' if not user }}">
-            <header>
-                <span>COMPANY OPERATIONS / INTERNAL</span>
-                <button type="button" id="theme-toggle" class="quiet">Toggle theme</button>
-            </header>
-            {% for category,message in get_flashed_messages(with_categories=true) %}
-                <div class="flash {{ category }}">{{ message }}</div>
-            {% endfor %}
-            {% block content %}{% endblock %}
-            <footer>
-                CIRRUS · One connected workspace. All dates and times in UTC.
-            </footer>
-        </main>
-    </body>
-</html>
+{% from 'components.html' import nav %}
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#131718">
+  <title>{{ title|default('Cirrus · Connected workspace') }}</title>
+  <link rel="icon" href="{{url_for('static',filename='mark.svg')}}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{url_for('static',filename='experience/experience.css')}}">
+  <link rel="stylesheet" href="{{url_for('static',filename='app.css')}}">
+  <script src="{{url_for('static',filename='theme.js')}}"></script>
+  <script defer src="{{url_for('static',filename='app.js')}}"></script>
+  <script type="module" src="{{url_for('static',filename='experience/experience.js')}}"></script>
+</head>
+<body class="{{'authenticated' if user else 'auth-screen'}}">
+<a href="#main-content" class="skip-link">Skip to content</a>
+{% if user %}
+<button class="sidebar-scrim" id="sidebar-scrim" aria-label="Close navigation"></button>
+<aside class="sidebar" aria-label="Main navigation">
+  <a class="brand" href="{{request.script_root}}/"><img src="{{url_for('static',filename='mark.svg')}}" width="33" height="33" alt=""><span>cirrus<span class="brand-dot">.</span></span><em>2.0</em></a>
+  <a class="workspace-switch" href="{{request.script_root}}/" aria-label="Open company workspace"><span class="workspace-avatar">C</span><div><b>Company workspace</b><small>Pulse + AssetPass</small></div><span data-ui-icon="external"></span></a>
+  <nav>
+    <div class="nav-label">YOUR WORKSPACE <span>01</span></div>
+    {{nav('/', 'Live Board', 'dashboard')}}
+    {{nav('/updates', 'Updates', 'layers')}}
+    {% if publisher %}{{nav('/updates/new', 'Create Update', 'plus')}}{% endif %}
+    {{nav('/archive', 'Archive', 'archive')}}
+    {{nav('/notifications', 'Notifications', 'bell')}}
+    <div class="nav-label">ASSETPASS <span>02</span></div>
+    {{nav('/assetpass', 'Overview', 'chart')}}
+    {{nav('/assetpass/mine', 'My Equipment', 'laptop')}}
+    {% if manager or user.role=='department_manager' %}{{nav('/assetpass/inventory', 'Equipment Inventory', 'box')}}{% endif %}
+    {{nav('/assetpass/assignments', 'Assignments & Handovers', 'arrows')}}
+    {{nav('/assetpass/returns', 'Returns', 'return')}}
+    {{nav('/assetpass/issues', 'Damage & Loss Reports', 'shield')}}
+    {{nav('/assetpass/history', 'Asset History', 'history')}}
+    {% if manager or user.role=='department_manager' %}{{nav('/assetpass/reports', 'Reports', 'report')}}{% endif %}
+    {% if manager %}{{nav('/assetpass/clearance', 'Equipment Clearance', 'check')}}{% endif %}
+    {% if user.role=='admin' %}
+    <div class="nav-label">ADMINISTRATION <span>03</span></div>
+    {{nav('/departments', 'Departments', 'building')}}{{nav('/admin/users', 'Users / Roles', 'users')}}{{nav('/settings', 'Settings', 'settings')}}
+    {% endif %}
+  </nav>
+  <div class="sidebar-bottom"><div class="workspace-status"><i></i> Internal workspace<span>v2.0</span></div><div class="profile"><span class="avatar">{{user.name[:1]|upper}}</span><div><b>{{user.name}}</b><small>{{user.role|replace('_',' ')}}</small></div><form method="post" action="{{request.script_root}}/logout"><input type="hidden" name="csrf" value="{{csrf}}"><button class="icon-button" title="Sign out" aria-label="Sign out"><span data-ui-icon="logout"></span></button></form></div></div>
+</aside>
+{% endif %}
+<div class="workspace-main {{'signed-out' if not user}}">
+  {% if user %}<header class="topbar"><div class="breadcrumb"><span class="breadcrumb-mark"></span><span>Workspace</span><span class="crumb-divider">/</span><b>{{'AssetPass' if '/assetpass' in request.path else 'Pulse'}}</b></div><div id="workspace-toolbar"></div></header>{% endif %}
+  <main id="main-content" tabindex="-1">
+  {% for category,message in get_flashed_messages(with_categories=true) %}<div class="flash {{category}}" role="status"><span data-ui-icon="check"></span>{{message}}</div>{% endfor %}
+  {% block content %}{% endblock %}
+  </main>
+  {% if user %}<footer><span><span class="footer-mark">◈</span> CIRRUS <b>CONNECTED WORKSPACE</b></span><span>All record times in UTC <i>·</i> <button class="text-button" data-open-command>Quick navigation <kbd>Ctrl K</kbd></button></span></footer>{% endif %}
+</div>
+<div id="experience-root" data-base="{{request.script_root}}" data-csrf="{{csrf}}" data-user="{{user.name if user else ''}}" data-manager="{{'1' if manager else '0'}}" data-publisher="{{'1' if publisher else '0'}}" data-authenticated="{{'1' if user else '0'}}"></div>
+</body></html>

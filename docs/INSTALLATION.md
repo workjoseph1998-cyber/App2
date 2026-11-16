@@ -1,5 +1,7 @@
 # Windows Server 2022 installation and rollback
 
+**For Cirrus Experience 2.0, start with [UPGRADE_2.0.md](UPGRADE_2.0.md).** The new release includes double-click `.cmd` setup/start/stop/import launchers that do not invoke unsigned PowerShell scripts. The PowerShell commands below remain an alternative when your organization permits/signed those scripts. The frontend is prebuilt; Node.js is not required on the application server.
+
 ## Prepare a separate application
 
 1. Keep Cirrus Workplace's existing installation, virtualenv, database and scripts intact. Do not extract this release over it.

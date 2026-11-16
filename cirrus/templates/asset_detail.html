@@ -15,6 +15,13 @@
                href="{{ request.script_root }}/assetpass/assets/{{ a.id }}/label">Print QR label</a>
         {% endif %}
     </div>
+    {% set latest = active if active else history[0] if history else none %}
+    <section class="handover-track" aria-label="Equipment lifecycle">
+      <div class="track-step done"><span>01</span><div><b>Registered</b><small>Equipment on record</small></div><i></i></div>
+      <div class="track-step {{'done' if latest else 'next'}}"><span>02</span><div><b>Handed over</b><small>{{latest.assigned_at[:10] if latest else 'Ready for assignment'}}</small></div><i></i></div>
+      <div class="track-step {{'done' if latest and latest.confirmed_at else 'next' if latest and not latest.returned_at else ''}}"><span>03</span><div><b>Receipt {{'confirmed' if latest and latest.confirmed_at else 'confirmation'}}</b><small>{{latest.confirmed_at[:10] if latest and latest.confirmed_at else 'Awaiting recipient' if active else 'Not confirmed'}}</small></div><i></i></div>
+      <div class="track-step {{'done' if latest and latest.returned_at else 'next' if latest and latest.return_requested_at else ''}}"><span>04</span><div><b>{{'Return requested' if latest and latest.return_requested_at and not latest.returned_at else 'Returned'}}</b><small>{{latest.returned_at[:10] if latest and latest.returned_at else 'Staff verification required' if latest and latest.return_requested_at else 'Complete the lifecycle'}}</small></div></div>
+    </section>
     <section class="panel">
         <h2>Equipment specifications</h2>
         <div class="specs">
@@ -42,7 +49,7 @@
     </section>
     {% if active %}
         <section class="panel">
-            <h2>Current handover</h2>
+            <div class="eyebrow">YOUR NEXT ACTION</div><h2>Current handover</h2>
             <p>{{ active.employee }} · Assigned {{ active.assigned_at }} · Condition: {{ active.condition_out }}</p>
             <p>{{ active.notes or '' }}</p>
             <span class="badge {{'notice' if active.confirmed_at else 'warning'}}">{{'Receipt confirmed '+active.confirmed_at if active.confirmed_at else 'Awaiting employee confirmation'}}</span>

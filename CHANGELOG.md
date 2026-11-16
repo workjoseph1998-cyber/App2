@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.0.0 — 2026-11-16
+
+- Rebuilt the interface with a new animated workspace shell, locally bundled typography, orbital visuals, equipment illustrations and consistent light/dark themes.
+- Added React-powered command search, notifications drawer, priority tabs, list/grid board layouts, animated real-data summaries and equipment-distribution charts.
+- Added sortable/searchable equipment tables, card views, pagination, multi-selection, authenticated quick views and batch QR label printing.
+- Added lifecycle progress indicators, refreshed forms/readers and responsive mobile navigation with keyboard/modal focus handling and reduced-motion support.
+- Added permission-checked search/notification APIs and management-only batch labels. Existing Pulse/AssetPass authorization and transactional workflows are preserved.
+- Added double-click Windows .cmd setup/start/stop/import launchers. Python data import preserves the source and refuses overwrite; the process stop helper checks interpreter, runner path and working directory.
+- Added a source-and-prebuilt-interface ZIP, full upgrade/rollback guide, dependency license notices and extended regression/browser coverage. Windows deployment remains manual; no IIS or Workplace changes.
+
 ## 1.0.1 — 2026-11-16
 
 - Fixed initial administrator creation failing with `AttributeError: app_db` outside a web request. Database connections now use the Flask application configuration in both CLI and web contexts.

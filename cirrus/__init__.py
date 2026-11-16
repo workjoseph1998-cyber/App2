@@ -11,6 +11,7 @@ from flask import (
     current_app,
     flash,
     g,
+    jsonify,
     redirect,
     render_template,
     request,
@@ -658,6 +659,87 @@ def create_app(config=None):
                 db().execute(f"INSERT INTO {table}(name) VALUES(?)", (required("name"),))
             return redirect(request.path)
         return render_template("settings.html")
+
+    @app.get("/api/experience/search")
+    @protected()
+    def experience_search():
+        query = request.args.get("q", "").strip()[:200]
+        if len(query) < 2:
+            return jsonify(results=[])
+        results = []
+        for n in get_notices(archive=True):
+            owner = g.user["role"] == "admin" or n["author_id"] == g.user["id"]
+            if n["starts_at"] and n["starts_at"] > now() and not owner:
+                continue
+            results.append(
+                {
+                    "type": "notice",
+                    "title": n["title"],
+                    "subtitle": n["category"] + " · " + n["severity"],
+                    "url": f"/updates/{n['id']}",
+                }
+            )
+            if len(results) >= 10:
+                break
+        for asset in rows(
+            "SELECT id,asset_tag,category,model,manufacturer FROM assets ORDER BY asset_tag"
+        ):
+            if not can_asset(asset):
+                continue
+            searchable = " ".join(
+                str(asset[k] or "") for k in ("asset_tag", "category", "model", "manufacturer")
+            )
+            if query.lower() not in searchable.lower():
+                continue
+            results.append(
+                {
+                    "type": "asset",
+                    "title": asset["asset_tag"],
+                    "subtitle": " ".join(
+                        str(asset[k] or "") for k in ("manufacturer", "model", "category")
+                    ),
+                    "url": f"/assetpass/assets/{asset['id']}",
+                }
+            )
+            if len(results) >= 20:
+                break
+        return jsonify(results=results)
+
+    def permitted_notifications():
+        items = []
+        for item in rows(
+            "SELECT * FROM notifications WHERE user_id=? ORDER BY id DESC", (g.user["id"],)
+        ):
+            if item["url"].startswith("/updates/"):
+                try:
+                    nid = int(item["url"].split("/")[2])
+                except (ValueError, IndexError):
+                    continue
+                n = one("SELECT * FROM notices WHERE id=?", (nid,))
+                if not n:
+                    continue
+                owner = g.user["role"] == "admin" or n["author_id"] == g.user["id"]
+                if not owner and (
+                    not visible_notice(n)
+                    or n["status"] == "draft"
+                    or (n["starts_at"] and n["starts_at"] > now())
+                ):
+                    continue
+            items.append(dict(item))
+        return items
+
+    @app.get("/api/experience/notifications")
+    @protected()
+    def experience_notifications():
+        items = permitted_notifications()
+        return jsonify(items=items[:50], unread=sum(not item["seen"] for item in items))
+
+    @app.post("/api/experience/notifications/read")
+    @protected()
+    def experience_notifications_read():
+        with db():
+            db().execute("UPDATE notifications SET seen=1 WHERE user_id=?", (g.user["id"],))
+        return jsonify(ok=True)
 
     from .assets import register_assets
 

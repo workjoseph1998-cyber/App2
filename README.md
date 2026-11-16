@@ -1,4 +1,4 @@
-# Cirrus Pulse + Cirrus AssetPass · 1.0.0
+# Cirrus Pulse + Cirrus AssetPass · 1.0.1
 
 One independent internal Flask application containing two integrated modules:
 
@@ -65,7 +65,7 @@ Accounts have one role. Department managers with no department have no departmen
 - [Test results and limitations](docs/TEST_RESULTS.md)
 - [Changelog](CHANGELOG.md)
 - [Sample screenshots](docs/SCREENSHOTS.md) — synthetic records only
-- ZIP: `dist/Cirrus-Pulse-Version-1.0.zip` (generated with `python scripts/package.py`; excludes databases, secrets, virtualenvs and caches)
+- ZIP: `dist/Cirrus-Pulse-Version-1.0.1.zip` (generated with `python scripts/package.py`; excludes databases, secrets, virtualenvs and caches)
 
 ## Optional synthetic demo
 

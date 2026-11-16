@@ -8,6 +8,7 @@ from pathlib import Path
 from flask import (
     Flask,
     abort,
+    current_app,
     flash,
     g,
     redirect,
@@ -50,7 +51,7 @@ def now():
 
 def db():
     if "db" not in g:
-        g.db = sqlite3.connect(g.app_db, timeout=15)
+        g.db = sqlite3.connect(current_app.config["DATABASE"], timeout=15)
         g.db.row_factory = sqlite3.Row
         g.db.execute("PRAGMA foreign_keys=ON")
     return g.db
@@ -318,17 +319,24 @@ def create_app(config=None):
     def init_admin():
         import click
 
-        username = click.prompt("Admin username")
+        username = click.prompt("Admin username").strip()
+        if not username:
+            raise click.ClickException("Username cannot be empty.")
         password = click.prompt(
             "Password (12+ characters)", hide_input=True, confirmation_prompt=True
         )
         if len(password) < 12:
             raise click.ClickException("Use at least 12 characters.")
-        with db():
-            db().execute(
-                "INSERT INTO users(username,name,password,role) VALUES(?,?,?,?)",
-                (username, username, generate_password_hash(password), "admin"),
-            )
+        try:
+            with db():
+                db().execute(
+                    "INSERT INTO users(username,name,password,role) VALUES(?,?,?,?)",
+                    (username, username, generate_password_hash(password), "admin"),
+                )
+        except sqlite3.IntegrityError as exc:
+            raise click.ClickException(
+                "That username already exists. Choose another username."
+            ) from exc
         click.echo("Administrator created.")
 
     @app.route("/login", methods=["GET", "POST"])

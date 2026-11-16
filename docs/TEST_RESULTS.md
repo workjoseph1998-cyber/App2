@@ -1,4 +1,12 @@
-# Validation results · 1.0.0
+# Validation results · 1.0.1
+
+## Administrator bootstrap correction
+
+The reported Windows `init-admin` failure was reproduced as a request-context dependency in database connection initialization and fixed in v1.0.1. The complete regression suite now reports **27 passed**, 0 failed, 0 skipped (23.69 seconds). Three new tests directly exercise the CLI without a web request: first administrator creation followed by authenticated login, short-password rejection without insertion, and duplicate username rejection without modifying the existing account. Ruff checks passed. The one-file patch was also applied to an extracted v1.0.0 archive and the exact documented Flask CLI command successfully created an administrator in a separate synthetic database.
+
+No Windows/IIS execution is claimed for this patch. The remaining results below describe the original v1.0.0 browser and deployment-tool validation, retained unchanged.
+
+## Original combined release validation
 
 Executed on 2026-11-16 in the isolated App2 cloud checkout, using synthetic data only. Runtime: Python 3.12.14, Linux; browser: Chromium 156.0.8078.79, headless Playwright. No Windows VM, IIS service, Workplace application or production database was accessed.
 

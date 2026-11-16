@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1 — 2026-11-16
+
+- Fixed initial administrator creation failing with `AttributeError: app_db` outside a web request. Database connections now use the Flask application configuration in both CLI and web contexts.
+- Added direct first-install CLI tests for successful creation/login, short-password rejection and duplicate-account preservation.
+- Duplicate usernames now produce a clear CLI error. No schema or dependency changes; existing accounts and data are preserved.
+
 ## 1.0.0 — 2026-11-16
 
 First combined App2 release, built from the empty repository baseline.

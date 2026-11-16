@@ -5,7 +5,7 @@ from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
 
 root = Path(__file__).resolve().parents[1]
-out = root / "dist" / "Cirrus-Pulse-Version-1.0.zip"
+out = root / "dist" / "Cirrus-Pulse-Version-1.0.1.zip"
 out.parent.mkdir(exist_ok=True)
 # Deliberate allowlist so data, attachments and secrets never enter the release.
 files = [
